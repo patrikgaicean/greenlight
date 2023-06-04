@@ -6,9 +6,6 @@ import (
 	"example/greenlight/internal/data"
 	"example/greenlight/internal/jsonlog"
 	"flag"
-	"fmt"
-	"log"
-	"net/http"
 	"os"
 	"time"
 
@@ -73,21 +70,10 @@ func main() {
 		models: data.NewModels(db),
 	}
 
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.port),
-		Handler:      app.routes(),
-		ErrorLog:     log.New(logger, "", 0),
-		IdleTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+	err = app.serve()
+	if err != nil {
+		logger.PrintFatal(err, nil)
 	}
-
-	logger.PrintInfo("starting server", map[string]string{
-		"addr": cfg.env,
-		"env":  srv.Addr,
-	})
-
-	err = srv.ListenAndServe()
-	logger.PrintFatal(err, nil)
 }
 
 func openDB(cfg config) (*sql.DB, error) {
